@@ -13,16 +13,19 @@ pipeline {
             stage("SonarQube analysis") {
                 steps {
                     withSonarQubeEnv('sonarqube') {
-                        sh 'mvn verify sonar:sonar -Dsonar.host.url=http://denetmu.duckdns.org:9000/'
+                        sh 'mvn verify sonar:sonar -Dsonar.host.url=http://denetmu.duckdns.org:9000/ -Dsonar.projectKey=prueba -Dsonar.projectName=Prueba'
                     }
                 }
             }
             stage("Quality Gate") {
                 steps {
-                    timeout(time: 1, unit: 'HOURS') {
-                        waitForQualityGate abortPipeline: true
+                    timeout(time: 5, unit: 'MINUTES') {
+						def qg = waitForQualityGate()
+						if (qg.status != 'OK') {
+						error "Pipeline aborted due to quality gate failure: ${qg.status}"
                     }
                 }
             }
-        }
+        }     
+    }
 }
